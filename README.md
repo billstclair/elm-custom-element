@@ -57,7 +57,7 @@ To build and run it:
     
 Then aim your web browser at http://localhost:8000/site/index.html
 
-The example is live at [billstclair.github.io/elm-custom-element](https://billstclair.github.io/elm-custom-element/).
+The example is live at [billstclair.github.io/elm-custom-element](https://billstclair.github.io/elm-custom-element/)
 
 ## Help to Expand the Library
 
