@@ -1,6 +1,6 @@
 # Custom Elements
 
-[billstclair/elm-custom-elements](http://package.elm-lang.org/packages/billstclair/elm-custom-elements/latest) is a package to collect Html custom element implementations. 
+[billstclair/elm-custom-element](http://package.elm-lang.org/packages/billstclair/elm-custom-element/latest) is a package to collect Html custom element implementations. 
 
 Note that when you use the included modules in your project, they won't actually DO anything unless you follow the instructions below to load their JavaScript files.
 
