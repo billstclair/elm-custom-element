@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Build the example, copy it to my billstclair.github.io project,
+# commit, and push to GitHub.
+# This won't be very useful to anybody but me.
+
+elm make src/Main.elm --output site/elm.js
+rsync -av --exclude .gitignore site/ ~/elm/billstclair.github.io/elm-custom-element/
+cd ~/elm/billstclair.github.io/elm-custom-element
+git add .
+git commit -am "Update elm-custom-element example."
+git push
+
