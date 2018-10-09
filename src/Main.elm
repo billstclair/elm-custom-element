@@ -17,7 +17,7 @@ import Char
 import CustomElement.CodeEditor as Editor
 import CustomElement.FileListener as File exposing (File)
 import Html exposing (Html, a, div, h1, h2, img, p, pre, text)
-import Html.Attributes exposing (href, src, width)
+import Html.Attributes exposing (accept, href, src, width)
 import Iso8601
 import Time
 
@@ -98,7 +98,7 @@ view model =
             ]
         , div []
             [ File.fileInput "fileid"
-                []
+                [ accept "image/*" ]
                 [ File.onLoad SetFile ]
             , br
             , case model.file of
