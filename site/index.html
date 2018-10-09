@@ -1,0 +1,50 @@
+<!--------------------------------------------------------------------
+--
+-- index.html
+-- Top-level HTML for CustomElement demo.
+-- Copyright (c) 2018 Bill St. Clair <billstclair@gmail.com>
+-- Some rights reserved.
+-- Distributed under the MIT License
+-- See LICENSE.txt
+--
+---------------------------------------------------------------------->
+
+<html>
+  <head>
+    <title>Custom Element Demo</title>
+    <!-- Other people's code -->
+    <!-- Uncomment for Firefox desktop support
+         Or just tell your users to set `dom.webcomponents.customelements.enabled`
+         in `about:config`.
+      <script type='text/javascript' src='lib/custom-elements.min.js'></script>
+    -->
+    <!-- These three are used by code-editor.js.
+         If you don't use that, you don't need these. -->
+    <link rel='stylesheet' href='lib/codemirror.css'>
+    <script type='text/javascript' src='lib/codemirror.js'></script>
+    <script type='text/javascript' src='lib/elm.js'></script>
+    <!-- My code -->
+    <script type='text/javascript' src='js/file-listener.js'></script>
+    <script type='text/javascript' src='js/code-editor.js'></script>
+    <!-- Compiled Elm code -->
+    <script type='text/javascript' src='elm.js'></script>
+  </head>
+  <body>
+    <div id='elm'></div>
+    <script type='text/javascript'>
+
+var app = null;
+
+if (typeof(Elm) == 'object' &&
+    typeof(Elm['Main']) == 'object' &&
+    Elm['Main'].init) {
+  app = Elm['Main'].init({
+    node: document.getElementById('elm')
+  });
+} else {
+  document.write("There is no Elm['Main'].init function. Did you 'elm make' your app into 'elm.js'?");
+}
+
+    </script>
+  </body>
+</html>
