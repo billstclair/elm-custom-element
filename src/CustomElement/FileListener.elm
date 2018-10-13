@@ -3,7 +3,7 @@ module CustomElement.FileListener exposing
     , fileListener, fileInput
     , fileId
     , onLoad
-    , multipartFormContentType, multipartFormData
+    , multipartFormContentType, multipartFormData, crlf
     )
 
 {-| The Elm interface to the `file-listener` custom element.
@@ -33,7 +33,7 @@ This code won't do anything unless `site/js/file-listener.js` is loaded.
 
 # Convenience Functions
 
-@docs multipartFormContentType, multipartFormData
+@docs multipartFormContentType, multipartFormData, crlf
 
 -}
 
@@ -127,6 +127,8 @@ fileDecoder =
         (JD.field "dataUrl" JD.string)
 
 
+{-| Two-character string: carriage return, line feed
+-}
 crlf : String
 crlf =
     -- elm-format rewrites "\r" or "\u{000d}" to "\x0D", and that doesn't compile.
