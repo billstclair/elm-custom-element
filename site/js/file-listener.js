@@ -28,6 +28,46 @@ function setupFileListener() {
 
 (function() {
 
+  // *** Begin patch to enable sending binary data. ***
+  //
+
+  // From https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest
+  function binarySend(sData) {
+    var nBytes = sData.length, ui8Data = new Uint8Array(nBytes);
+    for (var nIdx = 0; nIdx < nBytes; nIdx++) {
+      ui8Data[nIdx] = sData.charCodeAt(nIdx) & 0xff;
+    }
+    /* send as ArrayBufferView...: */
+    this.wwsUnpatchedSend(ui8Data);
+    /* ...or as ArrayBuffer (legacy)...: this.send(ui8Data.buffer); */
+  }
+
+  function patchedSend(data) {
+    if (typeof(data) != 'string') {
+      return this.wwsUnpatchedSend(data);
+    }
+    var lines = data.split('\r\n');
+    for (var i in lines) {
+      var line = lines[i];
+      if (line.startsWith('Content-Type: image')) {
+        return this.wwsBinarySend(data);
+      }
+    }
+    return this.wwsUnpatchedSend(data);
+  }
+
+  // Install the patch
+  if (!XMLHttpRequest.prototype.wwsUnpatchedSend) {
+    XMLHttpRequest.prototype.wwsUnpatchedSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.wwsBinarySend = binarySend;
+    XMLHttpRequest.prototype.send = patchedSend;
+  }
+
+
+  //
+  // *** End patch to enable sending binary data ***
+
+
   function getFile(id) {
     return document.getElementById(id);
   }

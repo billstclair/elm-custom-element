@@ -3,7 +3,8 @@ module CustomElement.FileListener exposing
     , fileListener, fileInput
     , fileId
     , onLoad
-    , multipartFormContentType, multipartFormData, crlf
+    , multipartFormContentType, multipartFormData
+    , crlf, fileDataBase64
     )
 
 {-| The Elm interface to the `file-listener` custom element.
@@ -33,7 +34,8 @@ This code won't do anything unless `site/js/file-listener.js` is loaded.
 
 # Convenience Functions
 
-@docs multipartFormContentType, multipartFormData, crlf
+@docs multipartFormContentType, multipartFormData
+@docs crlf, fileDataBase64
 
 -}
 
@@ -146,6 +148,16 @@ multipartFormContentType boundary =
     "multipart/form-data; boundary=" ++ boundary
 
 
+{-| Convert the `dataUrl` in the `File` to just it's data, without the URL prefix.
+-}
+fileDataBase64 : File -> String
+fileDataBase64 file =
+    String.split "," file.dataUrl
+        |> List.tail
+        |> Maybe.withDefault []
+        |> String.join ","
+
+
 {-| Turn a `boundary` string and a `File` into the body of a multipart form post.
 
 This is suitable as the second parameter to `Http.stringBody`.
@@ -153,6 +165,13 @@ This is suitable as the second parameter to `Http.stringBody`.
 -}
 multipartFormData : String -> File -> String
 multipartFormData boundary file =
+    -- In case you're tempted to copy this for your own binary POST,
+    -- it depends on a patch to XMLHttpRequest.prototype.send
+    -- in site/js/file-listener.js.
+    -- Without that patch, the binary data will be converted to UTF-8,
+    -- And the upload will fail.
+    -- The patch kicks in on finding a header line beginning with
+    -- "Content-Type: image"
     "--"
         ++ boundary
         ++ crlf
