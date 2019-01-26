@@ -14,6 +14,11 @@ Here are the custom element modules:
   
   JavaScript file: `site/js/file-listener.js`
   
+  This was a kluge to enable uploading binary files before `elm/http`
+  v2.x `elm/file`, and `elm/bytes`. If you still need to use
+  `elm/http` 1.x, then using this makes sense. For new code, use
+  `elm/file` with `elm/http` v2.x.
+  
 * `CustomElement.CodeEditor`
 
   A simple wrapper around the [CodeMirror](https://codemirror.net) code editor.
