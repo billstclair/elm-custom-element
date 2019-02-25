@@ -16,7 +16,7 @@ import Browser
 import Char
 import CustomElement.CodeEditor as Editor
 import CustomElement.FileListener as File exposing (File)
-import CustomElement.TextAreaTracker as Tracker
+import CustomElement.TextAreaTracker as Tracker exposing (Coordinates, Selection)
 import Html
     exposing
         ( Html
@@ -63,8 +63,8 @@ main =
 type alias Model =
     { file : Maybe File
     , value : String
-    , coordinates : String
-    , selection : String
+    , coordinates : Maybe Coordinates
+    , selection : Maybe Selection
     , triggerCoordinates : Int
     , triggerSelection : Int
     }
@@ -75,8 +75,8 @@ type Msg
     | CodeChanged String
     | TriggerCoordinates
     | TriggerSelection
-    | Coordinates Value
-    | Selection Value
+    | Coordinates Coordinates
+    | Selection Selection
 
 
 init : () -> ( Model, Cmd Msg )
@@ -88,8 +88,8 @@ init () =
                 ++ "import Html"
                 ++ "\n\n"
                 ++ "main = Html.text \"Hello, World!\""
-      , coordinates = "Click \"Trigger Coordinates\""
-      , selection = "Click \"Trigger Selection\"."
+      , coordinates = Nothing
+      , selection = Nothing
       , triggerCoordinates = 0
       , triggerSelection = 0
       }
@@ -121,22 +121,48 @@ update msg model =
             )
 
         Coordinates value ->
-            let
-                text =
-                    JE.encode 2 value
-            in
-            ( { model | coordinates = text }
+            ( { model | coordinates = Just value }
             , Cmd.none
             )
 
         Selection value ->
-            let
-                text =
-                    JE.encode 2 value
-            in
-            ( { model | selection = text }
+            ( { model | selection = Just value }
             , Cmd.none
             )
+
+
+coordinatesToString : Maybe Coordinates -> String
+coordinatesToString coordinates =
+    case coordinates of
+        Nothing ->
+            "Click 'Trigger Coordinates' to update."
+
+        Just c ->
+            let
+                cc =
+                    c.caretCoordinates
+            in
+            ("{ id = \"" ++ c.id ++ "\"\n")
+                ++ (", selectionStart = " ++ String.fromInt c.selectionStart ++ "\n")
+                ++ (", selectionEnd = " ++ String.fromInt c.selectionEnd ++ "\n")
+                ++ ", caretCoordinates = \n"
+                ++ ("   { top = " ++ String.fromInt cc.top ++ "\n")
+                ++ ("   , left = " ++ String.fromInt cc.left ++ "\n")
+                ++ "   }\n"
+                ++ "}"
+
+
+selectionToString : Maybe Selection -> String
+selectionToString selection =
+    case selection of
+        Nothing ->
+            "Click 'Trigger Selection' to update."
+
+        Just s ->
+            ("{ id = \"" ++ s.id ++ "\"\n")
+                ++ (", selectionStart = " ++ String.fromInt s.selectionStart ++ "\n")
+                ++ (", selectionEnd = " ++ String.fromInt s.selectionEnd ++ "\n")
+                ++ "}"
 
 
 copyright : String
@@ -160,7 +186,7 @@ borderStyle =
 
 borderAttributes =
     [ style "border" borderStyle
-    , style "text-align" "top"
+    , style "vertical-align" "top"
     ]
 
 
@@ -210,15 +236,21 @@ view model =
                     , th [ text "Selection" ]
                     ]
                 , tr
-                    [ td [ pre [] [ text model.coordinates ] ]
-                    , td [ pre [] [ text model.selection ] ]
+                    [ td
+                        [ pre []
+                            [ text <| coordinatesToString model.coordinates ]
+                        ]
+                    , td
+                        [ pre []
+                            [ text <| selectionToString model.selection ]
+                        ]
                     ]
                 ]
             , Tracker.textAreaTracker
                 [ Tracker.textAreaId "textarea"
                 , Tracker.triggerCoordinates model.triggerCoordinates
                 , Tracker.triggerSelection model.triggerSelection
-                , Tracker.onCaretCoordinates Coordinates
+                , Tracker.onCoordinates Coordinates
                 , Tracker.onSelection Selection
                 , id "tracker"
                 ]

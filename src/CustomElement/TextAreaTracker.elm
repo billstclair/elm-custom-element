@@ -11,22 +11,21 @@
 
 
 module CustomElement.TextAreaTracker exposing
-    ( Coordinates, Selection
+    ( Coordinates, CaretCoordinates, Selection
     , textAreaTracker
     , textAreaId, triggerCoordinates, triggerSelection
-    , onCaretCoordinates, onSelection
+    , onCoordinates, onSelection
+    , coordinatesDecoder, caretCoordinatesDecoder, selectionDecoder
     )
 
 {-| The Elm interface to the `text-area-tracker` custom element.
-
-[More about it]
 
 This code won't do anything unless `site/js/text-area-tracker.js` is loaded.
 
 
 # Types
 
-@docs Coordinates, Selection
+@docs Coordinates, CaretCoordinates, Selection
 
 
 # Html Elements
@@ -41,7 +40,12 @@ This code won't do anything unless `site/js/text-area-tracker.js` is loaded.
 
 # Events
 
-@docs onCaretCoordinates, onSelection
+@docs onCoordinates, onSelection
+
+
+# Decoders
+
+@docs coordinatesDecoder, caretCoordinatesDecoder, selectionDecoder
 
 -}
 
@@ -52,21 +56,26 @@ import Json.Decode as JD exposing (Decoder)
 import Json.Encode as JE exposing (Value)
 
 
-{-| The value for the onCoordinates event.
+{-| The `caretCoordinates` property of a `Coordinates` type.
+-}
+type alias CaretCoordinates =
+    { top : Int
+    , left : Int
+    , lineheight : Maybe Int
+    }
+
+
+{-| The value for the `onCoordinates` event.
 -}
 type alias Coordinates =
     { id : String
     , selectionStart : Int
     , selectionEnd : Int
-    , caretCoordinates :
-        { top : Int
-        , left : Int
-        , height : Maybe Int
-        }
+    , caretCoordinates : CaretCoordinates
     }
 
 
-{-| The value for the onSelection event.
+{-| The value for the `onSelection` event.
 -}
 type alias Selection =
     { id : String
@@ -100,7 +109,7 @@ encodeMaybe encoder ma =
             encoder a
 
 
-{-| This is how you trigger your subscription for the caret coordinates.
+{-| This is how you trigger the event for the caret coordinates.
 -}
 triggerCoordinates : Int -> Attribute msg
 triggerCoordinates value =
@@ -108,7 +117,7 @@ triggerCoordinates value =
         JE.int value
 
 
-{-| This is how you trigger your subscription for the caret coordinates.
+{-| This is how you trigger the event for the caret coordinates.
 -}
 triggerSelection : Int -> Attribute msg
 triggerSelection value =
@@ -118,11 +127,11 @@ triggerSelection value =
 
 {-| This is how you receive the caret selection and coordinates.
 -}
-onCaretCoordinates : (Value -> msg) -> Attribute msg
-onCaretCoordinates tagger =
+onCoordinates : (Coordinates -> msg) -> Attribute msg
+onCoordinates tagger =
     on "caretCoordinates" <|
         JD.map tagger <|
-            JD.at [ "target", "elmProperties" ] JD.value
+            JD.at [ "target", "elmProperties" ] coordinatesDecoder
 
 
 {-| This is how you receive the selection start and end.
@@ -132,11 +141,11 @@ If you want only the selection, and not the screen coordinates,
 it is faster to compute.
 
 -}
-onSelection : (Value -> msg) -> Attribute msg
+onSelection : (Selection -> msg) -> Attribute msg
 onSelection tagger =
     on "selection" <|
         JD.map tagger <|
-            JD.at [ "target", "selection" ] JD.value
+            JD.at [ "target", "selection" ] selectionDecoder
 
 
 
@@ -149,8 +158,38 @@ onSelection tagger =
 ---
 
 
-{-| Encoder for `Selection` type.
+{-| Decoder for the `Coordinates` type.
 -}
-encodeSelection : Selection -> Value
-encodeSelection selection =
-    JE.null
+coordinatesDecoder : Decoder Coordinates
+coordinatesDecoder =
+    JD.value
+        |> JD.andThen coordinatesDecoderDebug
+
+
+coordinatesDecoderDebug : Value -> Decoder Coordinates
+coordinatesDecoderDebug value =
+    JD.map4 Coordinates
+        (JD.field "id" JD.string)
+        (JD.field "selectionStart" JD.int)
+        (JD.field "selectionEnd" JD.int)
+        (JD.field "caretCoordinates" caretCoordinatesDecoder)
+
+
+{-| Decoder for the `CaretCoordinates` type.
+-}
+caretCoordinatesDecoder : Decoder CaretCoordinates
+caretCoordinatesDecoder =
+    JD.map3 CaretCoordinates
+        (JD.field "top" JD.int)
+        (JD.field "left" JD.int)
+        (JD.field "height" <| JD.maybe JD.int)
+
+
+{-| Decoder for the `Selection` type.
+-}
+selectionDecoder : Decoder Selection
+selectionDecoder =
+    JD.map3 Selection
+        (JD.field "id" JD.string)
+        (JD.field "selectionStart" JD.int)
+        (JD.field "selectionEnd" JD.int)
