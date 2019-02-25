@@ -88,7 +88,7 @@ update msg model =
                 text =
                     JE.encode 2 value
             in
-            ( { model | coordinates = Debug.log "Coordinates" text }
+            ( { model | coordinates = text }
             , Cmd.none
             )
 
@@ -116,26 +116,29 @@ view model =
             [ text "Examples of custom elements, used by Elm." ]
         , h2 [] [ text "text-area-tracker Custom Element" ]
         , p []
-            [ text "Edit the text below, and press the 'Coordinates' button."
+            [ text "Edit the text below, and click the 'Trigger' button."
             ]
-        , textarea
-            [ id "textarea"
-            , rows 10
-            , cols 80
+        , div []
+            [ textarea
+                [ id "textarea"
+                , rows 10
+                , cols 80
+                ]
+                []
+            , p []
+                [ button [ onClick TriggerCoordinates ]
+                    [ text "Trigger" ]
+                ]
+            , pre []
+                [ text model.coordinates ]
+            , Tracker.textAreaTracker
+                [ Tracker.textAreaId "textarea"
+                , Tracker.triggerCoordinates model.trigger
+                , Tracker.onCaretCoordinates Coordinates
+                , id "tracker"
+                ]
+                []
             ]
-            []
-        , br
-        , button [ onClick TriggerCoordinates ]
-            [ text "Trigger" ]
-        , pre []
-            [ text model.coordinates ]
-        , Tracker.textAreaTracker
-            [ Tracker.textAreaId "textarea"
-            , Tracker.triggerCoordinates model.trigger
-            , Tracker.onCaretCoordinates Coordinates
-            , id "tracker"
-            ]
-            []
         , h2 [] [ text "file-listener Custom Element" ]
         , p []
             [ text "Click the 'Choose File' button and choose an image file."

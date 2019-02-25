@@ -39,7 +39,12 @@
       var doit = this._triggerCoordinates !== null;
       this._triggerCoordinates = value;
       if (doit) {
-        this.dispatchEvent(new CustomEvent('caretCoordinates'));
+        var that = this;
+        function dispatch() {
+          that.dispatchEvent(new CustomEvent('caretCoordinates'));
+        }
+        // Need to delay or Elm doesn't call view.
+        window.setTimeout(dispatch, 1);        
       }
     }
 
