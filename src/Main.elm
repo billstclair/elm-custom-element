@@ -43,6 +43,7 @@ import Html.Attributes
         , src
         , style
         , type_
+        , value
         , width
         )
 import Html.Events exposing (onClick, onInput)
@@ -63,6 +64,7 @@ main =
 type alias Model =
     { file : Maybe File
     , value : String
+    , text : String
     , coordinates : Maybe Coordinates
     , selection : Maybe Selection
     , triggerCoordinates : Int
@@ -73,6 +75,7 @@ type alias Model =
 type Msg
     = SetFile File
     | CodeChanged String
+    | SetText String
     | TriggerCoordinates
     | TriggerSelection
     | Coordinates Coordinates
@@ -88,6 +91,7 @@ init () =
                 ++ "import Html"
                 ++ "\n\n"
                 ++ "main = Html.text \"Hello, World!\""
+      , text = "Four score and seven years ago,\nOur forefathers set forth..."
       , coordinates = Nothing
       , selection = Nothing
       , triggerCoordinates = 0
@@ -107,6 +111,11 @@ update msg model =
 
         CodeChanged value ->
             ( { model | value = value }
+            , Cmd.none
+            )
+
+        SetText text ->
+            ( { model | text = text }
             , Cmd.none
             )
 
@@ -221,8 +230,9 @@ view model =
                 [ id "textarea"
                 , rows 10
                 , cols 80
+                , onInput SetText
                 ]
-                []
+                [ text model.text ]
             , p []
                 [ button [ onClick TriggerCoordinates ]
                     [ text "Trigger Coordinates" ]
