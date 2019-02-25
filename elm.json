@@ -6,7 +6,8 @@
     "version": "1.2.2",
     "exposed-modules": [
         "CustomElement.FileListener",
-        "CustomElement.CodeEditor"
+        "CustomElement.CodeEditor",
+        "CustomElement.TextAreaTracker"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

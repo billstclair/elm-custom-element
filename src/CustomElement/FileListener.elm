@@ -11,6 +11,8 @@ module CustomElement.FileListener exposing
 
 This code won't do anything unless `site/js/file-listener.js` is loaded.
 
+For new code, you probably want to use `elm/file` and `elm/http` version 2 instead of this custom element.
+
 
 # Types
 

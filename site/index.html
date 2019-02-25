@@ -17,15 +17,19 @@
          Or just tell your users to set `dom.webcomponents.customelements.enabled`
          in `about:config`.
       <script type='text/javascript' src='lib/custom-elements.min.js'></script>
-    -->
+      -->
     <!-- These three are used by code-editor.js.
-         If you don't use that, you don't need these. -->
+         If you don't use that, you don't need these.
+      -->
     <link rel='stylesheet' href='lib/codemirror.css'>
     <script type='text/javascript' src='lib/codemirror.js'></script>
     <script type='text/javascript' src='lib/elm.js'></script>
-    <!-- My code -->
+    <!-- My code 
+         Only include the lines below for the custom elements you use. 
+      -->
     <script type='text/javascript' src='js/file-listener.js'></script>
     <script type='text/javascript' src='js/code-editor.js'></script>
+    <script type='text/javascript' src='js/text-area-tracker.js'></script>
     <!-- Compiled Elm code -->
     <script type='text/javascript' src='elm.js'></script>
   </head>

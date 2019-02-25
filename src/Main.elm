@@ -16,9 +16,12 @@ import Browser
 import Char
 import CustomElement.CodeEditor as Editor
 import CustomElement.FileListener as File exposing (File)
-import Html exposing (Html, a, div, h1, h2, img, p, pre, text)
-import Html.Attributes exposing (accept, href, src, width)
+import CustomElement.TextAreaTracker as Tracker
+import Html exposing (Html, a, button, div, h1, h2, img, p, pre, text, textarea)
+import Html.Attributes exposing (accept, cols, href, id, rows, src, width)
+import Html.Events exposing (onClick)
 import Iso8601
+import Json.Encode as JE exposing (Value)
 import Time
 
 
@@ -34,12 +37,16 @@ main =
 type alias Model =
     { file : Maybe File
     , value : String
+    , coordinates : String
+    , trigger : Int
     }
 
 
 type Msg
     = SetFile File
     | CodeChanged String
+    | TriggerCoordinates
+    | Coordinates Value
 
 
 init : () -> ( Model, Cmd Msg )
@@ -51,6 +58,8 @@ init () =
                 ++ "import Html"
                 ++ "\n\n"
                 ++ "main = Html.text \"Hello, World!\""
+      , coordinates = "Click the \"Trigger\" button to update."
+      , trigger = 0
       }
     , Cmd.none
     )
@@ -66,6 +75,20 @@ update msg model =
 
         CodeChanged value ->
             ( { model | value = value }
+            , Cmd.none
+            )
+
+        TriggerCoordinates ->
+            ( { model | trigger = model.trigger + 1 }
+            , Cmd.none
+            )
+
+        Coordinates value ->
+            let
+                text =
+                    JE.encode 2 value
+            in
+            ( { model | coordinates = Debug.log "Coordinates" text }
             , Cmd.none
             )
 
@@ -91,6 +114,28 @@ view model =
         [ h1 [] [ text "CustomElement Example" ]
         , p []
             [ text "Examples of custom elements, used by Elm." ]
+        , h2 [] [ text "text-area-tracker Custom Element" ]
+        , p []
+            [ text "Edit the text below, and press the 'Coordinates' button."
+            ]
+        , textarea
+            [ id "textarea"
+            , rows 10
+            , cols 80
+            ]
+            []
+        , br
+        , button [ onClick TriggerCoordinates ]
+            [ text "Trigger" ]
+        , pre []
+            [ text model.coordinates ]
+        , Tracker.textAreaTracker
+            [ Tracker.textAreaId "textarea"
+            , Tracker.triggerCoordinates model.trigger
+            , Tracker.onCaretCoordinates Coordinates
+            , id "tracker"
+            ]
+            []
         , h2 [] [ text "file-listener Custom Element" ]
         , p []
             [ text "Click the 'Choose File' button and choose an image file."
