@@ -6,6 +6,14 @@ Note that when you use the included modules in your project, they won't actually
 
 Here are the custom element modules:
 
+* `CustomElement.TextAreaTracker`
+
+  Attach a `<text-area-tracker>` to a `<textarea>` or 
+  `<input type='text'>` element. When triggered, it sends events from
+  which you may extract the current selection start and end and the
+  screen coordinates of the insertion cursor. This enables popping up
+  a completion dialog for, e.g., completing `@foo` nicknames.
+
 * `CustomElement.FileListener`
 
   Attach a `<file-listener>` to a `<file>` element, and when the user
@@ -14,7 +22,7 @@ Here are the custom element modules:
   
   JavaScript file: `site/js/file-listener.js`
   
-  This was a kluge to enable uploading binary files before `elm/http`
+  This was a kludge to enable uploading binary files before `elm/http`
   v2.x, `elm/file`, and `elm/bytes`. If you still need to use
   `elm/http` 1.x, then using this makes sense. For new code, use
   `elm/file` with `elm/http` v2.x.

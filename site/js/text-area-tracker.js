@@ -16,6 +16,7 @@
       super();
       this._textAreaId = null;
       this._triggerCoordinates = null;
+      this._triggerSelection = null;
     }
 
     connectedCallback() {
@@ -28,6 +29,24 @@
 
     set textAreaId(value) {
       this._textAreaId = value;
+    }
+
+    get triggerSelection() {
+      return this._triggerSelection;
+    }
+
+    set triggerSelection(value) {
+      // Don't trigger on first set.
+      var doit = this._triggerSelection !== null;
+      this._triggerSelection = value;
+      if (doit) {
+        var that = this;
+        function dispatch() {
+          that.dispatchEvent(new CustomEvent('selection'));
+        }
+        // Need to delay or Elm doesn't call view.
+        window.setTimeout(dispatch, 1);        
+      }
     }
 
     get triggerCoordinates() {
@@ -55,7 +74,7 @@
           return element;
         }
         console.log("getTextArea failed, _textAreaId:", this._textAreaId);
-        return nil;
+        return null;
       }
     }
 
@@ -64,7 +83,7 @@
       if (element) {
         return element.selectionStart;
       }
-      return nil;
+      return null;
     }
 
     get selectionEnd() {
@@ -72,7 +91,14 @@
       if (element) {
         return element.selectionEnd;
       }
-      return nil;
+      return null;
+    }
+
+    get selection() {
+      return { id: this.textAreaId,
+               selectionStart: this.selectionStart,
+               selectionEnd: this.selectionEnd
+             }
     }
 
     get elmProperties() {
@@ -86,17 +112,17 @@
     // Adapted from https://github.com/component/textarea-caret-position
     // Copyright (c) 2015 Jonathan Ong me@jongleberry.com
     // Distributed under the MIT license.
+    // See CREDITS
 
     get caretCoordinates() {
       if (!isBrowser) {
-        // Hard to imagine this happening.
         console.log("Not a browser!");
-        return nil;
+        return null;
       }
 
       var element = this.textArea;
       if (!element) {
-        return nil;
+        return null;
       }
       var position = element.selectionEnd;
       

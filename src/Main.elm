@@ -17,9 +17,35 @@ import Char
 import CustomElement.CodeEditor as Editor
 import CustomElement.FileListener as File exposing (File)
 import CustomElement.TextAreaTracker as Tracker
-import Html exposing (Html, a, button, div, h1, h2, img, p, pre, text, textarea)
-import Html.Attributes exposing (accept, cols, href, id, rows, src, width)
-import Html.Events exposing (onClick)
+import Html
+    exposing
+        ( Html
+        , a
+        , button
+        , div
+        , h1
+        , h2
+        , img
+        , input
+        , p
+        , pre
+        , text
+        , textarea
+        )
+import Html.Attributes
+    exposing
+        ( accept
+        , cols
+        , href
+        , id
+        , rows
+        , size
+        , src
+        , style
+        , type_
+        , width
+        )
+import Html.Events exposing (onClick, onInput)
 import Iso8601
 import Json.Encode as JE exposing (Value)
 import Time
@@ -38,7 +64,9 @@ type alias Model =
     { file : Maybe File
     , value : String
     , coordinates : String
-    , trigger : Int
+    , selection : String
+    , triggerCoordinates : Int
+    , triggerSelection : Int
     }
 
 
@@ -46,7 +74,9 @@ type Msg
     = SetFile File
     | CodeChanged String
     | TriggerCoordinates
+    | TriggerSelection
     | Coordinates Value
+    | Selection Value
 
 
 init : () -> ( Model, Cmd Msg )
@@ -58,8 +88,10 @@ init () =
                 ++ "import Html"
                 ++ "\n\n"
                 ++ "main = Html.text \"Hello, World!\""
-      , coordinates = "Click the \"Trigger\" button to update."
-      , trigger = 0
+      , coordinates = "Click \"Trigger Coordinates\""
+      , selection = "Click \"Trigger Selection\"."
+      , triggerCoordinates = 0
+      , triggerSelection = 0
       }
     , Cmd.none
     )
@@ -79,7 +111,12 @@ update msg model =
             )
 
         TriggerCoordinates ->
-            ( { model | trigger = model.trigger + 1 }
+            ( { model | triggerCoordinates = model.triggerCoordinates + 1 }
+            , Cmd.none
+            )
+
+        TriggerSelection ->
+            ( { model | triggerSelection = model.triggerSelection + 1 }
             , Cmd.none
             )
 
@@ -89,6 +126,15 @@ update msg model =
                     JE.encode 2 value
             in
             ( { model | coordinates = text }
+            , Cmd.none
+            )
+
+        Selection value ->
+            let
+                text =
+                    JE.encode 2 value
+            in
+            ( { model | selection = text }
             , Cmd.none
             )
 
@@ -108,6 +154,32 @@ b string =
     Html.b [] [ text string ]
 
 
+borderStyle =
+    "1px solid black"
+
+
+borderAttributes =
+    [ style "border" borderStyle
+    , style "text-align" "top"
+    ]
+
+
+table rows =
+    Html.table borderAttributes rows
+
+
+tr columns =
+    Html.tr [] columns
+
+
+th elements =
+    Html.th borderAttributes elements
+
+
+td elements =
+    Html.td borderAttributes elements
+
+
 view : Model -> Html Msg
 view model =
     div []
@@ -116,7 +188,7 @@ view model =
             [ text "Examples of custom elements, used by Elm." ]
         , h2 [] [ text "text-area-tracker Custom Element" ]
         , p []
-            [ text "Edit the text below, and click the 'Trigger' button."
+            [ text "Edit the text below and click a 'Trigger' button."
             ]
         , div []
             [ textarea
@@ -127,14 +199,27 @@ view model =
                 []
             , p []
                 [ button [ onClick TriggerCoordinates ]
-                    [ text "Trigger" ]
+                    [ text "Trigger Coordinates" ]
+                , text " "
+                , button [ onClick TriggerSelection ]
+                    [ text "Trigger Selection" ]
                 ]
-            , pre []
-                [ text model.coordinates ]
+            , table
+                [ tr
+                    [ th [ text "Coordinates" ]
+                    , th [ text "Selection" ]
+                    ]
+                , tr
+                    [ td [ pre [] [ text model.coordinates ] ]
+                    , td [ pre [] [ text model.selection ] ]
+                    ]
+                ]
             , Tracker.textAreaTracker
                 [ Tracker.textAreaId "textarea"
-                , Tracker.triggerCoordinates model.trigger
+                , Tracker.triggerCoordinates model.triggerCoordinates
+                , Tracker.triggerSelection model.triggerSelection
                 , Tracker.onCaretCoordinates Coordinates
+                , Tracker.onSelection Selection
                 , id "tracker"
                 ]
                 []
