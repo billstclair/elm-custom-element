@@ -17,6 +17,7 @@
       this._textAreaId = null;
       this._triggerCoordinates = null;
       this._triggerSelection = null;
+      this._setSelection = null;
     }
 
     connectedCallback() {
@@ -29,6 +30,42 @@
 
     set textAreaId(value) {
       this._textAreaId = value;
+    }
+
+    get setSelection() {
+      return this._setSelection;
+    }
+
+    set setSelection(value) {
+      var oldValue = this._setSelection
+      this._setSelection = value;
+      if (value) {
+        if (!oldValue ||
+            oldValue.count != value.count ||
+            oldValue.start != value.start ||
+            oldValue.end != value.end ||
+            oldValue.direction != value.direction
+           ) {
+          var element = this.textArea;
+          if (element) {
+            var that = this;
+            function doit() {
+              var start = value.start;
+              var end = value.end;
+              if (start == null) {
+                start = end;
+              } else if (end == null) {
+                end = start;
+              }
+              element.setSelectionRange(start, end, value.direction);
+            }
+            // The user will often set the text at the same time as
+            // the selection. Elm will sync in an unknown order,
+            // so delay changing the selection.
+            window.setTimeout(doit, 1);
+          }
+        }
+      }
     }
 
     get triggerSelection() {
@@ -45,7 +82,7 @@
           that.dispatchEvent(new CustomEvent('selection'));
         }
         // Need to delay or Elm doesn't call view.
-        window.setTimeout(dispatch, 1);        
+        window.setTimeout(dispatch, 1);
       }
     }
 

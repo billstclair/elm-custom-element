@@ -13,7 +13,7 @@
 module CustomElement.TextAreaTracker exposing
     ( Coordinates, CaretCoordinates, Selection
     , textAreaTracker
-    , textAreaId, triggerCoordinates, triggerSelection
+    , textAreaId, setSelection, triggerCoordinates, triggerSelection
     , onCoordinates, onSelection
     , coordinatesDecoder, caretCoordinatesDecoder, selectionDecoder
     )
@@ -35,7 +35,7 @@ This code won't do anything unless `site/js/text-area-tracker.js` is loaded.
 
 # Attributes
 
-@docs textAreaId, triggerCoordinates, triggerSelection
+@docs textAreaId, setSelection, triggerCoordinates, triggerSelection
 
 
 # Events
@@ -107,6 +107,23 @@ encodeMaybe encoder ma =
 
         Just a ->
             encoder a
+
+
+{-| This is how you set the selection range.
+
+One of the values must change to cause the selection to be effected.
+Hence the `count` parameter. Code will usually increment a model variable
+each time the selection needs to be changed.
+
+    setSelection start end count
+
+If `start == end`, the input position will move with no selection.
+
+-}
+setSelection : Int -> Int -> Int -> Attribute msg
+setSelection start end count =
+    property "setSelection" <|
+        encodeSetSelection start end count
 
 
 {-| This is how you trigger the event for the caret coordinates.
@@ -193,3 +210,14 @@ selectionDecoder =
         (JD.field "id" JD.string)
         (JD.field "selectionStart" JD.int)
         (JD.field "selectionEnd" JD.int)
+
+
+{-| Encoder for the `setSelection` property.
+-}
+encodeSetSelection : Int -> Int -> Int -> Value
+encodeSetSelection start end count =
+    JE.object
+        [ ( "start", JE.int start )
+        , ( "end", JE.int end )
+        , ( "count", JE.int count )
+        ]

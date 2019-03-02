@@ -13,6 +13,7 @@
 module Main exposing (main)
 
 import Browser
+import Browser.Dom as Dom
 import Char
 import CustomElement.CodeEditor as Editor
 import CustomElement.FileListener as File exposing (File)
@@ -49,6 +50,7 @@ import Html.Attributes
 import Html.Events exposing (onClick, onInput)
 import Iso8601
 import Json.Encode as JE exposing (Value)
+import Task
 import Time
 
 
@@ -67,15 +69,22 @@ type alias Model =
     , text : String
     , coordinates : Maybe Coordinates
     , selection : Maybe Selection
+    , selectionStart : String
+    , selectionEnd : String
+    , setSelection : Int
     , triggerCoordinates : Int
     , triggerSelection : Int
     }
 
 
 type Msg
-    = SetFile File
+    = Noop
+    | SetFile File
     | CodeChanged String
     | SetText String
+    | SetStart String
+    | SetEnd String
+    | SetSelection
     | TriggerCoordinates
     | TriggerSelection
     | Coordinates Coordinates
@@ -94,6 +103,9 @@ init () =
       , text = "Four score and seven years ago,\nOur forefathers set forth..."
       , coordinates = Nothing
       , selection = Nothing
+      , selectionStart = "1"
+      , selectionEnd = "10"
+      , setSelection = 0
       , triggerCoordinates = 0
       , triggerSelection = 0
       }
@@ -101,9 +113,17 @@ init () =
     )
 
 
+focusId : String -> Cmd Msg
+focusId id =
+    Task.attempt (\_ -> Noop) <| Dom.focus id
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Noop ->
+            ( model, Cmd.none )
+
         SetFile file ->
             ( { model | file = Just file }
             , Cmd.none
@@ -117,6 +137,21 @@ update msg model =
         SetText text ->
             ( { model | text = text }
             , Cmd.none
+            )
+
+        SetStart string ->
+            ( { model | selectionStart = string }
+            , Cmd.none
+            )
+
+        SetEnd string ->
+            ( { model | selectionEnd = string }
+            , Cmd.none
+            )
+
+        SetSelection ->
+            ( { model | setSelection = model.setSelection + 1 }
+            , focusId textAreaId
             )
 
         TriggerCoordinates ->
@@ -215,6 +250,11 @@ td elements =
     Html.td borderAttributes elements
 
 
+textAreaId : String
+textAreaId =
+    "textarea"
+
+
 view : Model -> Html Msg
 view model =
     div []
@@ -224,17 +264,39 @@ view model =
         , h2 [] [ text "text-area-tracker Custom Element" ]
         , p []
             [ text "Edit the text below and click a 'Trigger' button."
+            , br
+            , text "Or change 'Start' and 'End' and click 'Set Selection'."
             ]
         , div []
             [ textarea
-                [ id "textarea"
+                [ id textAreaId
                 , rows 10
                 , cols 80
                 , onInput SetText
                 ]
                 [ text model.text ]
             , p []
-                [ button [ onClick TriggerCoordinates ]
+                [ text "Start: "
+                , input
+                    [ type_ "text"
+                    , size 3
+                    , onInput SetStart
+                    , value model.selectionStart
+                    ]
+                    []
+                , text " End: "
+                , input
+                    [ type_ "text"
+                    , size 3
+                    , onInput SetEnd
+                    , value model.selectionEnd
+                    ]
+                    []
+                , text " "
+                , button [ onClick SetSelection ]
+                    [ text "Set Selection" ]
+                , br
+                , button [ onClick TriggerCoordinates ]
                     [ text "Trigger Coordinates" ]
                 , text " "
                 , button [ onClick TriggerSelection ]
@@ -256,8 +318,19 @@ view model =
                         ]
                     ]
                 ]
-            , Tracker.textAreaTracker
-                [ Tracker.textAreaId "textarea"
+            , let
+                start =
+                    Maybe.withDefault 0 <| String.toInt model.selectionStart
+
+                end =
+                    Maybe.withDefault 0 <| String.toInt model.selectionEnd
+
+                count =
+                    model.setSelection
+              in
+              Tracker.textAreaTracker
+                [ Tracker.textAreaId textAreaId
+                , Tracker.setSelection start end count
                 , Tracker.triggerCoordinates model.triggerCoordinates
                 , Tracker.triggerSelection model.triggerSelection
                 , Tracker.onCoordinates Coordinates
