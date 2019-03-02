@@ -3,7 +3,7 @@
     "name": "billstclair/elm-custom-element",
     "summary": "A custom element library",
     "license": "MIT",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "exposed-modules": [
         "CustomElement.FileListener",
         "CustomElement.CodeEditor",
